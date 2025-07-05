@@ -1,0 +1,346 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shorts Player - Extreme</title>
+    <style>
+        :root {
+            --primary-accent: #ff0055;
+            --background-color: #000000;
+            --text-color: #ffffff;
+            --icon-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--background-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        #shorts-container {
+            width: 100%;
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+        }
+        #shorts-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .video-slide {
+            width: 100%;
+            height: 100vh;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+        }
+
+        .video-slide video {
+            aspect-ratio: 9 / 16;
+            width: auto;
+            height: 100%;
+            max-height: 100vh;
+            max-width: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            background-color: #000;
+        }
+
+        .video-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            padding-bottom: 80px;
+            display: flex;
+            align-items: flex-end;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+        }
+
+        .video-info h3 {
+            color: var(--text-color);
+            text-shadow: var(--icon-shadow);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .video-info p {
+            color: var(--text-color);
+            text-shadow: var(--icon-shadow);
+            font-size: 0.9rem;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 20%;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .control-button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 30px;
+            text-shadow: var(--icon-shadow);
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .action-item:hover .control-button {
+            transform: scale(1.15);
+        }
+
+        .action-text {
+            color: var(--text-color);
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 4px;
+            text-shadow: var(--icon-shadow);
+        }
+
+        .like-btn.liked {
+            color: var(--primary-accent);
+        }
+
+        .follow-btn {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #000;
+            font-size: 20px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            position: absolute;
+            top: -15px;
+        }
+
+        .follow-btn.followed {
+            background-color: var(--primary-accent);
+            color: white;
+        }
+
+        .play-pause-icon {
+            position: absolute;
+            font-size: 80px;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: var(--icon-shadow);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1.5);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.3s ease;
+        }
+
+        .play-pause-icon.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    </style>
+</head>
+<body>
+    <main id="shorts-container">
+        <!-- Videos will be dynamically loaded here by JavaScript -->
+    </main>
+
+    <script>
+        const videos = [
+            { src: 'videos/video1.mp4', user: '@NightCrawler', title: 'Midnight Drive Vibes', likes: 12500, isLiked: false, isFollowed: false },
+            { src: 'videos/video2.mp4', user: '@OceanDreamer', title: 'Sunset Serenity', likes: 23800, isLiked: false, isFollowed: false },
+            { src: 'videos/video3.mp4', user: '@WanderLust', title: 'Into the Wild', likes: 8900, isLiked: false, isFollowed: false },
+            { src: 'videos/video4.mp4', user: '@NeonGlow', title: 'City of Lights', likes: 45200, isLiked: false, isFollowed: false },
+            { src: 'videos/video5.mp4', user: '@CafeMoods', title: 'Rainy Day Thoughts', likes: 18400, isLiked: false, isFollowed: false },
+            { src: 'videos/video6.mp4', user: '@IronBeast', title: 'Unleash the Power', likes: 99600, isLiked: false, isFollowed: false },
+             { src: 'videos/video7.mp4', user: '@IronBeast', title: 'Unleash the Power', likes: 99600, isLiked: false, isFollowed: false },
+             { src: 'videos/video8.mp4', user: '@IronBeast', title: 'Unleash the Power', likes: 99600, isLiked: false, isFollowed: false },
+            { src: 'videos/video9.mp4', user: '@IronBeast', title: 'Unleash the Power', likes: 99600, isLiked: false, isFollowed: false }
+             	
+        ];
+function getSelectedVideoIndex() {
+    const params = new URLSearchParams(window.location.search);
+    return parseInt(params.get('video'), 10);
+}
+
+const selectedVideoIndex = getSelectedVideoIndex();
+if (!isNaN(selectedVideoIndex) && selectedVideoIndex >= 0 && selectedVideoIndex < videos.length) {
+    const selectedVideo = videos.splice(selectedVideoIndex, 1)[0];
+    videos.unshift(selectedVideo);
+}
+
+
+        const shortsContainer = document.getElementById('shorts-container');
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            return num;
+        }
+
+        function createVideoSlides() {
+            videos.forEach((videoData, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'video-slide';
+                slide.setAttribute('data-index', index);
+
+                const video = document.createElement('video');
+                video.src = videoData.src;
+                video.loop = true;
+                video.playsInline = true;
+                video.muted = true;
+
+                const overlay = document.createElement('div');
+                overlay.className = 'video-overlay';
+
+                const videoInfo = document.createElement('div');
+                videoInfo.className = 'video-info';
+                videoInfo.innerHTML = `<h3>${videoData.user}</h3><p>${videoData.title}</p>`;
+
+                const playPauseIcon = document.createElement('div');
+                playPauseIcon.className = 'play-pause-icon';
+                playPauseIcon.innerHTML = '▶️';
+
+                const controls = document.createElement('div');
+                controls.className = 'video-controls';
+
+                const userProfileItem = document.createElement('div');
+                userProfileItem.className = 'action-item';
+                userProfileItem.style.position = 'relative';
+                userProfileItem.innerHTML = `<img src="https://i.pravatar.cc/50?u=${videoData.user}" style="width:50px; height:50px; border-radius:50%; border: 2px solid white;">`;
+
+                const followButton = document.createElement('button');
+                followButton.className = 'control-button follow-btn';
+                followButton.innerHTML = '+';
+                followButton.onclick = (e) => {
+                    e.stopPropagation();
+                    videoData.isFollowed = !videoData.isFollowed;
+                    followButton.innerHTML = videoData.isFollowed ? '✓' : '+';
+                    followButton.classList.toggle('followed', videoData.isFollowed);
+                };
+                userProfileItem.appendChild(followButton);
+
+                const likeItem = document.createElement('div');
+                likeItem.className = 'action-item';
+                const likeButton = document.createElement('button');
+                likeButton.className = 'control-button like-btn';
+                likeButton.innerHTML = '❤️';
+                const likeText = document.createElement('span');
+                likeText.className = 'action-text';
+                likeText.textContent = formatNumber(videoData.likes);
+                likeItem.append(likeButton, likeText);
+
+                likeItem.onclick = (e) => {
+                    e.stopPropagation();
+                    videoData.isLiked = !videoData.isLiked;
+                    videoData.likes += videoData.isLiked ? 1 : -1;
+                    likeButton.classList.toggle('liked', videoData.isLiked);
+                    likeText.textContent = formatNumber(videoData.likes);
+                };
+
+                const shareItem = document.createElement('div');
+                shareItem.className = 'action-item';
+                shareItem.innerHTML = `<button class="control-button">🔗</button><span class="action-text">Share</span>`;
+                shareItem.onclick = async (e) => {
+                    e.stopPropagation();
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: videoData.title,
+                                text: `Check out this video from ${videoData.user}!`,
+                                url: window.location.href
+                            });
+                        } catch (error) {
+                            console.error('Share failed:', error);
+                        }
+                    } else {
+                        alert('Share feature is not available on your browser.');
+                    }
+                };
+
+                const muteItem = document.createElement('div');
+                muteItem.className = 'action-item';
+                const muteButton = document.createElement('button');
+                muteButton.className = 'control-button mute-btn';
+                muteButton.innerHTML = '🔇';
+                const muteText = document.createElement('span');
+                muteText.className = 'action-text';
+                muteText.textContent = 'Mute';
+                muteItem.append(muteButton, muteText);
+                muteItem.onclick = (e) => {
+                    e.stopPropagation(); 
+                    video.muted = !video.muted;
+                    muteButton.innerHTML = video.muted ? '🔇' : '🔊';
+                };
+
+                controls.append(userProfileItem, likeItem, shareItem, muteItem);
+                overlay.appendChild(videoInfo);
+                slide.append(video, overlay, playPauseIcon, controls);
+                slide.addEventListener('click', () => togglePlayPause(slide));
+                shortsContainer.appendChild(slide);
+            });
+        }
+
+        function togglePlayPause(slide) {
+            const video = slide.querySelector('video');
+            const icon = slide.querySelector('.play-pause-icon');
+
+            if (video.paused) {
+                video.play();
+                icon.innerHTML = '▶️';
+                icon.classList.add('show');
+                setTimeout(() => icon.classList.remove('show'), 500);
+            } else {
+                video.pause();
+                icon.innerHTML = '⏸️';
+                icon.classList.add('show');
+            }
+        }
+
+        function handleIntersection(entries) {
+            entries.forEach(entry => {
+                const video = entry.target.querySelector('video');
+                if (entry.isIntersecting) {
+                    video.play().catch(e => {});
+                } else {
+                    video.pause();
+                    video.currentTime = 0;
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createVideoSlides();
+            const observer = new IntersectionObserver(handleIntersection, { threshold: 0.5 });
+            document.querySelectorAll('.video-slide').forEach(slide => observer.observe(slide));
+        });
+    </script>
+</body>
+</html>
